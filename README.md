@@ -4,6 +4,12 @@ Simple tasks/pipeline app. Hosted on Raspberry Pi Zero W (as of September 2026).
 
 
 ---
+### Deployment
+
+- Copy files to the RPi `/home/admin/pi-list' directory
+- Restart the application (see section below)
+
+---
 
 ### Configuration / Commands (on RaspberryPi Zero)
 
@@ -12,7 +18,7 @@ Simple tasks/pipeline app. Hosted on Raspberry Pi Zero W (as of September 2026).
 
   ```text
   [Unit]
-  Description=Flask Application
+  Description=Pi-List Application
   After=network.target tailscaled.service
 
   [Service]
@@ -32,8 +38,8 @@ Simple tasks/pipeline app. Hosted on Raspberry Pi Zero W (as of September 2026).
 Use the following commands to manage the state of the service
 
 ```shell
-sudo systemctl start flask-app.service      # start it now
-sudo systemctl stop flask-app.service       # stop it now
-sudo systemctl restart flask-app.service    # stop then start
-sudo systemctl status flask-app.service     # check if it's running
+sudo systemctl start pi-list.service      # start it now
+sudo systemctl stop pi-list.service       # stop it now
+sudo systemctl restart pi-list.service    # stop then start
+sudo systemctl status pi-list.service     # check if it's running
 ```
