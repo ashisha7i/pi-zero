@@ -27,6 +27,7 @@ jobs:
       - name: Deploy via rsync
         run: |
           rsync -avz --delete \
+            --exclude='*.db' \
             -e "ssh -i ~/.ssh/id_ed25519" \
             ./ ${{ secrets.RPI_USER }}@${{ secrets.RPI_HOST }}:/home/admin/pi-list/
 
