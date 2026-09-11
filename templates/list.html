@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ list_name }}</title>
+    <link rel="icon" type="image/png" href="/static/icon.png">
+    <link rel="apple-touch-icon" href="/static/icon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #ffffff;
+            color: #000000;
+        }
+        body { 
+            font-family: monospace; 
+            max-width: 400px; 
+            margin: 0 auto; 
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #000;
+            padding-bottom: 4px;
+            margin: 5px 0 10px 0;
+            flex-shrink: 0;
+        }
+        h2 {
+            font-size: 16px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .heading-icon {
+            font-size: 14px;
+        }
+        .back-link {
+            font-size: 12px;
+            text-decoration: none;
+            color: #000;
+            border: 1px solid #000;
+            padding: 2px 6px;
+        }
+        .input-group { 
+            display: flex; 
+            gap: 4px; 
+            margin-bottom: 10px; 
+            flex-shrink: 0; 
+        }
+        input[type="text"] { 
+            flex-grow: 1; 
+            padding: 4px 6px; 
+            font-size: 16px; 
+            border: 1px solid #000; 
+            border-radius: 0;
+            outline: none;
+        }
+        button { 
+            padding: 4px 8px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            border: 1px solid #000; 
+            border-radius: 0;
+            background: #fff;
+            color: #000;
+        }
+        .btn-add { background: #000; color: #fff; font-weight: bold; }
+        ul { 
+            list-style-type: none; 
+            padding: 0; 
+            margin: 0; 
+            flex-grow: 1;
+            overflow-y: auto; 
+            overflow-x: hidden; 
+        }
+        li { 
+            padding: 6px 0; 
+            border-bottom: 1px dotted #000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            gap: 5px;
+            background-color: #ffffff;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            -webkit-touch-callout: none; 
+            -webkit-user-select: none; 
+            user-select: none;
+        }
+        .done-bg { background-color: #f0fff0; }
+        .drag-handle {
+            color: #ccc;
+            font-size: 18px;
+            padding: 0 10px 0 5px;
+            cursor: grab;
+            touch-action: none; 
+        }
+        .item-name { 
+            flex-grow: 1; 
+            font-size: 14px; 
+        }
+        .done-text { 
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+        .btn-group { display: flex; gap: 4px; }
+        .icon-btn { padding: 2px 6px; font-size: 12px; }
+
+        .sortable-fallback {
+            opacity: 1 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2) !important;
+            border: 1px solid #e0e0e0 !important;
+            border-radius: 8px !important;
+            transform: scale(1.03) !important;
+            z-index: 9999 !important;
+            cursor: grabbing !important;
+        }
+        .sortable-ghost {
+            background-color: #f8f9fa !important;
+            border: 2px dashed #cbd5e1 !important;
+            border-radius: 8px;
+        }
+        .sortable-ghost * {
+            opacity: 0 !important;
+        }
+
+        #editModal {
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center; 
+            justify-content: center;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 15px;
+            border: 2px solid #000;
+            width: 80%;
+            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .modal-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <a class="back-link" href="/">&larr; Lists</a>
+        <h2>
+            <svg class="heading-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg> 
+            {{ list_name }}
+        </h2>
+    </div>
+    
+    <div class="input-group">
+        <input type="text" id="itemInput" placeholder="Add..." autofocus>
+        <button class="btn-add" onclick="addItem()">+</button>
+    </div>
+    
+    <ul id="list"></ul>
+
+    <div id="editModal">
+        <div class="modal-content">
+            <h3>Edit Item</h3>
+            <input type="text" id="editInput">
+            <div class="modal-actions">
+                <button onclick="closeEditModal()">Cancel</button>
+                <button class="btn-add" onclick="saveEdit()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const listId = {{ list_id }};
+        let isUserSwiping = false; 
+        let currentEditId = null; 
+        const listContainer = document.getElementById('list');
+
+        new Sortable(listContainer, {
+            handle: '.drag-handle', 
+            animation: 250,
+            easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+            ghostClass: 'sortable-ghost',
+            forceFallback: true,
+            fallbackClass: 'sortable-fallback',
+            onStart: () => { isUserSwiping = true; if (navigator.vibrate) navigator.vibrate(50); },
+            onEnd: () => { saveOrder(); }
+        });
+
+        async function loadItems() {
+            if (isUserSwiping) return;
+
+            const response = await fetch(`/api/items/${listId}`, { cache: 'no-store' });
+            const items = await response.json();
+            listContainer.innerHTML = '';
+            
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.dataset.id = item.id; 
+                li.oncontextmenu = (e) => { e.preventDefault(); return false; };
+                
+                if (item.done) li.classList.add('done-bg');
+                
+                const handle = document.createElement('div');
+                handle.className = 'drag-handle';
+                handle.innerHTML = '&#9776;'; 
+                
+                const span = document.createElement('span');
+                span.className = 'item-name ' + (item.done ? 'done-text' : '');
+                span.textContent = item.name;
+                
+                const btnGroup = document.createElement('div');
+                btnGroup.className = 'btn-group';
+                const doneBtn = document.createElement('button');
+                doneBtn.innerHTML = item.done ? '&#8634;' : '&#10003;';
+                doneBtn.className = 'icon-btn';
+                doneBtn.onclick = () => toggleItem(item.id);
+                btnGroup.appendChild(doneBtn);
+                
+                li.appendChild(handle);
+                li.appendChild(span);
+                li.appendChild(btnGroup);
+                
+                let startX = 0, startY = 0, currentX = 0, isHorizontalSwipe = null, longPressTimer = null; 
+
+                span.addEventListener('touchstart', (e) => { 
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    currentX = startX;
+                    isHorizontalSwipe = null; 
+                    li.style.transition = 'none'; 
+                    longPressTimer = setTimeout(() => { openEditModal(item.id, item.name); }, 600);
+                }, { passive: true });
+
+                span.addEventListener('touchmove', (e) => {
+                    currentX = e.touches[0].clientX;
+                    const diffX = currentX - startX;
+                    const diffY = e.touches[0].clientY - startY;
+
+                    if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) clearTimeout(longPressTimer);
+                    if (isHorizontalSwipe === null) isHorizontalSwipe = Math.abs(diffX) > Math.abs(diffY);
+                    if (!isHorizontalSwipe) return;
+
+                    isUserSwiping = true;
+                    li.style.transform = `translateX(${diffX}px)`;
+
+                    if (diffX > 150) {
+                        li.style.backgroundColor = item.done ? '#fff0b3' : '#e6ffe6';
+                    } else if (diffX < -150) {
+                        li.style.backgroundColor = '#ffe6e6'; 
+                    } else {
+                        li.style.backgroundColor = ''; 
+                    }
+                }, { passive: true });
+
+                span.addEventListener('touchcancel', () => {
+                    clearTimeout(longPressTimer);
+                    li.style.transition = 'transform 0.3s ease, background-color 0.3s ease';
+                    li.style.transform = 'translateX(0)';
+                    li.style.backgroundColor = ''; 
+                });
+
+                span.addEventListener('touchend', () => {
+                    clearTimeout(longPressTimer); 
+                    if (!isHorizontalSwipe) return; 
+
+                    const diffX = currentX - startX;
+                    li.style.transition = 'transform 0.3s ease, background-color 0.3s ease';
+                    li.style.transform = 'translateX(0)';
+                    li.style.backgroundColor = ''; 
+
+                    setTimeout(() => {
+                        isUserSwiping = false;
+                        if (diffX > 150) toggleItem(item.id);
+                        else if (diffX < -150) deleteItem(item.id);
+                    }, 50);
+                });
+
+                listContainer.appendChild(li);
+            });
+        }
+
+        async function saveOrder() {
+            const listItems = document.querySelectorAll('#list li');
+            const newOrderIds = Array.from(listItems).map(li => li.dataset.id);
+            try {
+                await fetch('/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order: newOrderIds })
+                });
+            } catch (err) { console.error(err); }
+            setTimeout(() => { isUserSwiping = false; }, 500); 
+        }
+
+        async function addItem() {
+            const input = document.getElementById('itemInput');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            await fetch(`/api/add/${listId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item: text })
+            });
+            input.value = '';
+            loadItems();
+        }
+
+        async function toggleItem(id) {
+            await fetch(`/toggle/${id}`, { method: 'POST' });
+            loadItems();
+        }
+
+        async function deleteItem(id) {
+            await fetch(`/delete/${id}`, { method: 'POST' });
+            loadItems();
+        }
+
+        function openEditModal(id, currentName) {
+            isUserSwiping = true; 
+            currentEditId = id;
+            const modal = document.getElementById('editModal');
+            const input = document.getElementById('editInput');
+            input.value = currentName;
+            modal.style.display = 'flex';
+            input.focus();
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            currentEditId = null;
+            setTimeout(() => { isUserSwiping = false; }, 500); 
+        }
+
+        async function saveEdit() {
+            const input = document.getElementById('editInput');
+            const newName = input.value.trim();
+            if (newName !== "" && currentEditId !== null) {
+                await fetch(`/edit/${currentEditId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newName })
+                });
+                loadItems();
+            }
+            closeEditModal();
+        }
+
+        document.getElementById('itemInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addItem();
+        });
+        document.getElementById('editInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') saveEdit();
+        });
+
+        loadItems();
+        setInterval(loadItems, 2000);
+    </script>
+</body>
+</html>

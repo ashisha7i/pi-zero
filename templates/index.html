@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pi Lists</title>
+    <link rel="icon" type="image/png" href="/static/icon.png">
+    <link rel="apple-touch-icon" href="/static/icon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #000000;
+        }
+        body { 
+            font-family: monospace; 
+            max-width: 400px; 
+            margin: 0 auto; 
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        h2 {
+            text-transform: uppercase;
+            border-bottom: 2px solid #000;
+            padding-bottom: 4px;
+            font-size: 16px;
+            margin: 5px 0 10px 0;
+        }
+        .input-group { 
+            display: flex; 
+            gap: 4px; 
+            margin-bottom: 10px; 
+        }
+        input[type="text"] { 
+            flex-grow: 1; 
+            padding: 4px 6px; 
+            font-size: 16px; 
+            border: 1px solid #000; 
+            border-radius: 0;
+            outline: none;
+        }
+        button { 
+            padding: 4px 8px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            border: 1px solid #000; 
+            border-radius: 0;
+            background: #fff;
+            color: #000;
+        }
+        .btn-add { background: #000; color: #fff; font-weight: bold; }
+        ul { 
+            list-style-type: none; 
+            padding: 0; 
+            margin: 0; 
+        }
+        li { 
+            padding: 8px 0; 
+            border-bottom: 1px dotted #000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+        }
+        a {
+            color: #000;
+            text-decoration: none;
+            font-size: 14px;
+            flex-grow: 1;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h2>My Lists</h2>
+    <div class="input-group">
+        <input type="text" id="listInput" placeholder="New list name..." autofocus>
+        <button class="btn-add" onclick="addList()">+</button>
+    </div>
+    <ul id="listsContainer"></ul>
+
+    <script>
+        async function loadLists() {
+            const res = await fetch('/api/lists', { cache: 'no-store' });
+            const lists = await res.json();
+            const container = document.getElementById('listsContainer');
+            container.innerHTML = '';
+            
+            lists.forEach(lst => {
+                const li = document.createElement('li');
+                
+                const link = document.createElement('ahref'); // wait, let's use proper property
+                const a = document.createElement('a');
+                a.href = `/list/${lst.id}`;
+                a.textContent = lst.name;
+                
+                const delBtn = document.createElement('button');
+                delBtn.innerHTML = '&#10005;';
+                delBtn.className = 'icon-btn';
+                delBtn.onclick = () => deleteList(lst.id);
+                
+                li.appendChild(a);
+                li.appendChild(delBtn);
+                container.appendChild(li);
+            });
+        }
+
+        async function addList() {
+            const input = document.getElementById('listInput');
+            const name = input.value.trim();
+            if (!name) return;
+            
+            await fetch('/api/lists', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            input.value = '';
+            loadLists();
+        }
+
+        async function deleteList(id) {
+            if (!confirm("Delete this list and all its items?")) return;
+            await fetch(`/api/lists/${id}`, { method: 'DELETE' });
+            loadLists();
+        }
+
+        document.getElementById('listInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addList();
+        });
+
+        loadLists();
+    </script>
+</body>
+</html>
