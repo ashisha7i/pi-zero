@@ -22,16 +22,16 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.RPI_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.RPI_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.RPI_HOST_IP }} >> ~/.ssh/known_hosts
 
       - name: Deploy via rsync
         run: |
           rsync -avz --delete \
             --exclude='*.db' \
             -e "ssh -i ~/.ssh/id_ed25519" \
-            ./ ${{ secrets.RPI_USER }}@${{ secrets.RPI_HOST }}:/home/admin/pi-list/
+            ./ ${{ secrets.RPI_USER }}@${{ secrets.RPI_HOST_IP }}:/home/admin/pi-list/
 
       - name: Restart service
         run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ secrets.RPI_USER }}@${{ secrets.RPI_HOST }} \
+          ssh -i ~/.ssh/id_ed25519 ${{ secrets.RPI_USER }}@${{ secrets.RPI_HOST_IP }} \
             "sudo systemctl restart pi-list.service"
