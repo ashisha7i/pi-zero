@@ -3,6 +3,9 @@ name: Deploy to Raspberry Pi
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
