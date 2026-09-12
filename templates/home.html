@@ -22,17 +22,6 @@
     </div>
     <ul id="listsContainer"></ul>
 
-    <div id="editModal">
-        <div class="modal-content">
-            <h3>Rename List</h3>
-            <input type="text" id="editInput">
-            <div class="modal-actions">
-                <button onclick="closeEditModal()">Cancel</button>
-                <button class="btn-add" onclick="saveEdit()">Save</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         async function loadLists() {
             const res = await fetch('/api/lists', { cache: 'no-store' });
@@ -47,24 +36,13 @@
                 a.href = `/list/${lst.id}`;
                 a.textContent = lst.name;
 
-                const btnGroup = document.createElement('div');
-                btnGroup.className = 'btn-group';
-
-                const editBtn = document.createElement('button');
-                editBtn.innerHTML = '&#9998;';
-                editBtn.className = 'icon-btn';
-                editBtn.onclick = () => openEditModal(lst.id, lst.name);
-
                 const delBtn = document.createElement('button');
                 delBtn.innerHTML = '&#10005;';
                 delBtn.className = 'icon-btn';
                 delBtn.onclick = () => deleteList(lst.id);
 
-                btnGroup.appendChild(editBtn);
-                btnGroup.appendChild(delBtn);
-
                 li.appendChild(a);
-                li.appendChild(btnGroup);
+                li.appendChild(delBtn);
                 container.appendChild(li);
             });
         }
@@ -89,41 +67,8 @@
             loadLists();
         }
 
-        let currentEditId = null;
-
-        function openEditModal(id, currentName) {
-            currentEditId = id;
-            const modal = document.getElementById('editModal');
-            const input = document.getElementById('editInput');
-            input.value = currentName;
-            modal.style.display = 'flex';
-            input.focus();
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-            currentEditId = null;
-        }
-
-        async function saveEdit() {
-            const input = document.getElementById('editInput');
-            const newName = input.value.trim();
-            if (newName !== "" && currentEditId !== null) {
-                await fetch(`/api/lists/${currentEditId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: newName })
-                });
-                loadLists();
-            }
-            closeEditModal();
-        }
-
         document.getElementById('listInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addList();
-        });
-        document.getElementById('editInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') saveEdit();
         });
 
         loadLists();

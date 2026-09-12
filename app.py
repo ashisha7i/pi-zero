@@ -60,15 +60,10 @@ def handle_lists():
             lists = conn.execute('SELECT id, name FROM lists').fetchall()
             return jsonify([{'id': row[0], 'name': row[1]} for row in lists])
 
-@app.route('/api/lists/<int:list_id>', methods=['DELETE', 'PUT'])
+@app.route('/api/lists/<int:list_id>', methods=['DELETE'])
 def modify_list(list_id):
     with sqlite3.connect(DB_FILE) as conn:
         conn.execute('PRAGMA foreign_keys = ON')
-        if request.method == 'PUT':
-            data = request.get_json()
-            if data and data.get('name'):
-                conn.execute('UPDATE lists SET name = ? WHERE id = ?', (data['name'].strip(), list_id))
-            return jsonify({'status': 'success'})
         conn.execute('DELETE FROM items WHERE list_id = ?', (list_id,))
         conn.execute('DELETE FROM lists WHERE id = ?', (list_id,))
     return jsonify({'status': 'success'})
