@@ -7,7 +7,7 @@ DB_FILE = 'shopping.db'
 def init_db():
     with sqlite3.connect(DB_FILE) as conn:
         conn.execute('PRAGMA foreign_keys = ON')
-        
+
         # Create tables if they don't exist
         conn.execute('''
             CREATE TABLE IF NOT EXISTS lists (
@@ -17,25 +17,25 @@ def init_db():
         ''')
         conn.execute('''
             CREATE TABLE IF NOT EXISTS items (
-                id INTEGER PRIMARY KEY, 
+                id INTEGER PRIMARY KEY,
                 list_id INTEGER,
-                name TEXT NOT NULL, 
+                name TEXT NOT NULL,
                 done INTEGER DEFAULT 0,
                 sort_order INTEGER DEFAULT 0,
                 FOREIGN KEY(list_id) REFERENCES lists(id) ON DELETE CASCADE
             )
         ''')
-        
+
         # Safely add missing columns to existing tables
         try:
             conn.execute('ALTER TABLE lists ADD COLUMN name TEXT')
         except sqlite3.OperationalError:
-            pass 
+            pass
 
         try:
             conn.execute('ALTER TABLE items ADD COLUMN list_id INTEGER')
         except sqlite3.OperationalError:
-            pass 
+            pass
 
         try:
             conn.execute('ALTER TABLE items ADD COLUMN sort_order INTEGER DEFAULT 0')
@@ -60,10 +60,15 @@ def handle_lists():
             lists = conn.execute('SELECT id, name FROM lists').fetchall()
             return jsonify([{'id': row[0], 'name': row[1]} for row in lists])
 
-@app.route('/api/lists/<int:list_id>', methods=['DELETE'])
-def delete_list(list_id):
+@app.route('/api/lists/<int:list_id>', methods=['DELETE', 'PUT'])
+def modify_list(list_id):
     with sqlite3.connect(DB_FILE) as conn:
         conn.execute('PRAGMA foreign_keys = ON')
+        if request.method == 'PUT':
+            data = request.get_json()
+            if data and data.get('name'):
+                conn.execute('UPDATE lists SET name = ? WHERE id = ?', (data['name'].strip(), list_id))
+            return jsonify({'status': 'success'})
         conn.execute('DELETE FROM items WHERE list_id = ?', (list_id,))
         conn.execute('DELETE FROM lists WHERE id = ?', (list_id,))
     return jsonify({'status': 'success'})
