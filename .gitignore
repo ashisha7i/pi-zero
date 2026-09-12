@@ -1,2 +1,6 @@
 *.db
 data/**
+
+venv/
+.cline/
+.github/
