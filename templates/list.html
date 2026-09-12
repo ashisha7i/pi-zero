@@ -22,7 +22,7 @@
             </svg>
             <span id="listTitle">{{ list_name }}</span>
         </h2>
-        <button class="rename-btn" onclick="openRenameModal()">&#9998;</button>
+
     </div>
 
     <div class="input-group">
@@ -39,17 +39,6 @@
             <div class="modal-actions">
                 <button onclick="closeEditModal()">Cancel</button>
                 <button class="btn-add" onclick="saveEdit()">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="renameListModal">
-        <div class="modal-content">
-            <h3>Rename List</h3>
-            <input type="text" id="renameListInput">
-            <div class="modal-actions">
-                <button onclick="closeRenameModal()">Cancel</button>
-                <button class="btn-add" onclick="saveRename()">Save</button>
             </div>
         </div>
     </div>
@@ -231,43 +220,12 @@
             closeEditModal();
         }
 
-        function openRenameModal() {
-            const modal = document.getElementById('renameListModal');
-            const input = document.getElementById('renameListInput');
-            input.value = document.getElementById('listTitle').textContent;
-            modal.style.display = 'flex';
-            input.focus();
-        }
-
-        function closeRenameModal() {
-            document.getElementById('renameListModal').style.display = 'none';
-        }
-
-        async function saveRename() {
-            const input = document.getElementById('renameListInput');
-            const newName = input.value.trim();
-            if (newName !== "") {
-                await fetch(`/api/lists/${listId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: newName })
-                });
-                document.getElementById('listTitle').textContent = newName;
-                document.title = newName;
-            }
-            closeRenameModal();
-        }
-
         document.getElementById('itemInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addItem();
         });
         document.getElementById('editInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') saveEdit();
         });
-        document.getElementById('renameListInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') saveRename();
-        });
-
         loadItems();
         setInterval(loadItems, 2000);
     </script>
