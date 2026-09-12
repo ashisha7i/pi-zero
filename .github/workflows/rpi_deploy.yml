@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: Deploy to Raspberry Pi
 
 on:
@@ -8,8 +7,24 @@ on:
       - main
 
 jobs:
-  deploy:
+  check:
     runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+    steps:
+      - name: Check commit message
+        id: check
+        run: |
+          if echo "${{ github.event.head_commit.message }}" | grep -qi '\*\*deploy\*\*'; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || needs.check.outputs.should_deploy == 'true'
     steps:
       - uses: actions/checkout@v4
 

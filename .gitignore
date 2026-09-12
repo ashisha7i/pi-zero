@@ -1,6 +1,7 @@
 *.db
-data/**
 
+data/
 venv/
+.venv/
 .cline/
 .github/
